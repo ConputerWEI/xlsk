@@ -23,6 +23,7 @@ export type Dish = {
   featured: boolean;
   available: boolean;
   tasting: boolean;
+  tastingModels?: import("./lib/tastingModel").TastingModels;
   options: OptionGroup[];
 };
 

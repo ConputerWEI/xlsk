@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dish, Settings } from "../types";
 import { playTick } from "../lib/sound";
+import ModelSurface from "./ModelSurface";
 
 type Props = {
   dish: Dish;
@@ -12,6 +13,8 @@ type Spark = { x: number; y: number; vx: number; vy: number; born: number; color
 
 export default function SketchDish({ dish, settings, compact = false }: Props) {
   const frame = useRef<HTMLDivElement>(null);
+  const modelRotation = useRef(0), modelPitch = useRef(0), modelZoom = useRef(1);
+  const modelSrc = dish.tastingModels?.[0];
   const object = useRef<HTMLImageElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
@@ -34,6 +37,9 @@ export default function SketchDish({ dish, settings, compact = false }: Props) {
         v.velocity *= Math.exp(-5.2 * dt);
         if (settings.autoRotate && !settings.reducedMotion && now - v.touched > 1800) v.yaw += dt * 9;
       }
+      modelRotation.current = v.yaw * Math.PI / 180;
+      modelPitch.current = v.pitch * Math.PI / 180; modelZoom.current = v.zoom;
+      if (frame.current) { frame.current.dataset.rotation = modelRotation.current.toFixed(4); frame.current.dataset.pitch = modelPitch.current.toFixed(4); }
       const bob = settings.reducedMotion ? 0 : Math.sin(now / 780) * 4;
       if (object.current) {
         object.current.style.transform = `perspective(900px) rotateX(${v.pitch}deg) rotateY(${v.yaw}deg) translateY(${bob}px) scale(${v.zoom})`;
@@ -47,6 +53,18 @@ export default function SketchDish({ dish, settings, compact = false }: Props) {
   }, [settings.autoRotate, settings.reducedMotion]);
 
   useEffect(() => () => cancelAnimationFrame(sparkFrame.current), []);
+  function releasePointer(id: number, cancelled = false) {
+    if (!pointers.current.has(id)) return false;
+    const pinching = pointers.current.size > 1;
+    pointers.current.delete(id);
+    dragging.current = pointers.current.size > 0;
+    if (pinching && pointers.current.size === 1) {
+      const [remaining] = pointers.current.values();
+      gesture.current = { ...gesture.current, ...remaining, time: performance.now(), pinch: 0, travel: Math.max(8, gesture.current.travel) };
+    }
+    if (cancelled || pinching) view.current.velocity = 0;
+    return true;
+  }
 
   function sparkle(x: number, y: number) {
     playTick(settings.sound);
@@ -91,12 +109,12 @@ export default function SketchDish({ dish, settings, compact = false }: Props) {
   return (
     <div
       ref={frame}
-      className={`sketch-stage ${compact ? "sketch-stage--compact" : ""}`}
+      className={`sketch-stage ${compact ? "sketch-stage--compact" : ""} ${modelSrc ? "has-model" : ""}`}
       tabIndex={compact ? -1 : 0}
       role={compact ? "img" : "application"}
-      aria-label={`${dish.name}手绘预览。拖动旋转，滚轮缩放，方向键调整视角。`}
+      aria-label={`${dish.name}${modelSrc ? "纸感3D预览" : "手绘预览"}。拖动旋转，方向键调整视角。`}
       onPointerDown={(event) => {
-        if (compact) return;
+        if (compact || (event.pointerType !== "touch" && !event.isPrimary) || event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
         frame.current?.setPointerCapture(event.pointerId);
         pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
         dragging.current = true;
@@ -130,7 +148,7 @@ export default function SketchDish({ dish, settings, compact = false }: Props) {
         const dy = event.clientY - gesture.current.y;
         const elapsed = Math.max(8, now - gesture.current.time);
         view.current.yaw += dx * 0.42;
-        view.current.pitch = Math.max(-24, Math.min(28, view.current.pitch - dy * 0.2));
+        view.current.pitch = modelSrc ? view.current.pitch + dy * 0.6 : Math.max(-24, Math.min(28, view.current.pitch - dy * 0.2));
         view.current.velocity = (dx * 0.42 * 1000) / elapsed;
         gesture.current.x = event.clientX;
         gesture.current.y = event.clientY;
@@ -139,32 +157,22 @@ export default function SketchDish({ dish, settings, compact = false }: Props) {
         view.current.touched = now;
       }}
       onPointerUp={(event) => {
-        if (compact) return;
-        pointers.current.delete(event.pointerId);
-        if (!pointers.current.size) dragging.current = false;
+        if (compact || !releasePointer(event.pointerId)) return;
         if (gesture.current.travel < 7) {
           const rect = frame.current?.getBoundingClientRect();
           if (rect) sparkle(event.clientX - rect.left, event.clientY - rect.top);
         }
         view.current.touched = performance.now();
       }}
-      onPointerCancel={(event) => {
-        pointers.current.delete(event.pointerId);
-        dragging.current = pointers.current.size > 0;
-      }}
-      onWheel={(event) => {
-        if (compact) return;
-        event.preventDefault();
-        view.current.zoom = Math.max(0.75, Math.min(1.5, view.current.zoom - event.deltaY * 0.001));
-        view.current.touched = performance.now();
-      }}
+      onPointerCancel={event => { releasePointer(event.pointerId, true); }}
+      onLostPointerCapture={event => { if (event.target === event.currentTarget) releasePointer(event.pointerId, true); }}
       onKeyDown={(event) => {
-        if (compact) return;
+        if (compact || (event.target as HTMLElement).closest("button")) return;
         const v = view.current;
         if (event.key === "ArrowLeft") v.yaw -= 12;
         else if (event.key === "ArrowRight") v.yaw += 12;
-        else if (event.key === "ArrowUp") v.pitch = Math.min(28, v.pitch + 5);
-        else if (event.key === "ArrowDown") v.pitch = Math.max(-24, v.pitch - 5);
+        else if (event.key === "ArrowUp") v.pitch = modelSrc ? v.pitch - 10 : Math.min(28, v.pitch + 5);
+        else if (event.key === "ArrowDown") v.pitch = modelSrc ? v.pitch + 10 : Math.max(-24, v.pitch - 5);
         else if (event.key === "+" || event.key === "=") v.zoom = Math.min(1.5, v.zoom + 0.1);
         else if (event.key === "-") v.zoom = Math.max(0.75, v.zoom - 0.1);
         else if (event.key === "Enter" || event.key === " ") {
@@ -175,15 +183,14 @@ export default function SketchDish({ dish, settings, compact = false }: Props) {
         v.touched = performance.now();
       }}
     >
-      <div className="stage-circle" aria-hidden="true" />
-      <svg className="stage-orbit" viewBox="0 0 400 400" aria-hidden="true"><path d="M42 222c-14-98 57-175 155-183 102-8 172 56 166 153-6 104-77 167-170 164C99 354 24 301 42 222Z" /></svg>
-      {failed ? (
+      {modelSrc ? (
+        <div className="sketch-model-object"><ModelSurface src={modelSrc} rotation={modelRotation} pitch={modelPitch} zoom={modelZoom} settings={{ autoRotate: false, reducedMotion: settings.reducedMotion }} /></div>
+      ) : failed ? (
         <div className="dish-fallback"><strong>{dish.name}</strong><span>图片暂未展开，选配和点单不受影响。</span></div>
       ) : (
         <img ref={object} className="sketch-dish-object" src={dish.image} alt={dish.name} draggable={false} onError={() => setFailed(true)} />
       )}
       <canvas ref={canvas} className="spark-layer" aria-hidden="true" />
-      <span className="stage-note">{compact ? "手绘菜品" : "拖动转一转 · 点一下有惊喜"}</span>
     </div>
   );
 }

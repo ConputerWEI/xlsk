@@ -2,4 +2,7 @@ node_modules/
 dist/
 .DS_Store
 *.log
+.codex/
+artifacts/
 验收/截图/
+验收/截图-GLB/

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import SketchDish from "./components/SketchDish";
 import MenuRibbon from "./components/MenuRibbon";
 import Tasting from "./components/Tasting";
@@ -54,7 +54,7 @@ function SettingsDialog({ open, settings, onChange, onClose, onReset }: {
       <div className="dialog-heading"><div><p className="eyebrow">菜单边角</p><h2>翻页设置</h2></div><button className="round-close" type="button" onClick={onClose} aria-label="关闭设置">×</button></div>
       <div className="setting-row"><span><strong>轻点声音</strong><small>火花、试吃与完成提示</small></span><Toggle label="轻点声音" checked={settings.sound} onChange={() => onChange({ ...settings, sound: !settings.sound })} /></div>
       <div className="setting-row"><span><strong>自动转台</strong><small>停下操作后慢慢转动菜品</small></span><Toggle label="自动转台" checked={settings.autoRotate} onChange={() => onChange({ ...settings, autoRotate: !settings.autoRotate })} /></div>
-      <div className="setting-row"><span><strong>减少动态</strong><small>关闭自动旋转、悬浮和纸屑</small></span><Toggle label="减少动态" checked={settings.reducedMotion} onChange={() => onChange({ ...settings, reducedMotion: !settings.reducedMotion })} /></div>
+      <div className="setting-row"><span><strong>减少动态</strong><small>关闭自动旋转与悬浮动画</small></span><Toggle label="减少动态" checked={settings.reducedMotion} onChange={() => onChange({ ...settings, reducedMotion: !settings.reducedMotion })} /></div>
       <button className="text-button reset-link" type="button" onClick={onReset}>清空小票并回到封面</button>
       <p className="dialog-note">订单只保存在当前浏览器，不会发送到餐厅。</p>
     </dialog>
@@ -102,6 +102,8 @@ export default function App() {
   const [note, setNote] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("招牌");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const menuScroll = useRef(0), nextScroll = useRef(0);
+  useLayoutEffect(() => { window.scrollTo({ top: nextScroll.current, behavior: "instant" }); }, [screen]);
   const [toast, setToast] = useState("");
   const dish = getDish(selectedId);
   const total = cartTotal(session.lines);
@@ -122,9 +124,11 @@ export default function App() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  function navigate(next: Screen) {
-    setScreen(next);
-    window.scrollTo({ top: 0, behavior: settings.reducedMotion ? "auto" : "smooth" });
+  function navigate(next: Screen, restoreMenu = false) {
+    if (screen === "menu" && next !== "menu") menuScroll.current = window.scrollY;
+    nextScroll.current = next === "menu" && restoreMenu ? menuScroll.current : 0;
+    if (next === screen) window.scrollTo({ top: nextScroll.current, behavior: "instant" });
+    else setScreen(next);
   }
 
   function selectDish(id: string) {
@@ -183,7 +187,7 @@ export default function App() {
             <div className="welcome-copy">
               <p className="eyebrow">一本可以点的手绘菜单</p>
               <h1>先翻一翻，<br />再决定<span>吃什么。</span></h1>
-              <p className="welcome-lead">6 道东南亚菜，把食材、份量和辣度都画清楚。拖动菜品看看，再把喜欢的夹进小票。</p>
+              <p className="welcome-lead">{dishes.length} 道东南亚菜，把食材、份量和辣度都画清楚。拖动菜品看看，再把喜欢的夹进小票。</p>
               <div className="service-choice" aria-label="就餐方式">
                 <button type="button" className={session.mode === "dine-in" ? "selected" : ""} onClick={() => setSession({ ...session, mode: "dine-in" })}><span>堂食</span><small>选人数与桌号</small></button>
                 <button type="button" className={session.mode === "takeaway" ? "selected" : ""} onClick={() => setSession({ ...session, mode: "takeaway" })}><span>打包</span><small>选好直接下单</small></button>
@@ -199,14 +203,13 @@ export default function App() {
               <SketchDish dish={dishes[0]} settings={settings} />
             </div>
           </section>
-          <footer className="welcome-footer"><span>拖一拖菜品</span><i>✦</i><span>点一下有火花</span><i>✦</i><span>试吃留下纸面咬痕</span></footer>
         </main>
       )}
 
       {screen === "menu" && (
         <main className="menu-page page-shell" data-screen="menu">
           {header}
-          <section className="menu-heading"><div><p className="eyebrow">从招牌开始翻</p><h1>今天想吃什么？</h1></div><p>菜品是手绘平面插画，<br />点进去就能拖动观察与选配。</p></section>
+          <section className="menu-heading"><div><p className="eyebrow">从招牌开始翻</p><h1>今天想吃什么？</h1></div></section>
           <MenuRibbon settings={settings} onSelect={selectDish} />
           <div className="menu-workspace">
             <section className="dish-catalog">
@@ -220,7 +223,7 @@ export default function App() {
                       <span className="dish-card-copy"><small>{item.thai}</small><strong>{item.name}</strong><span>{item.description}</span></span>
                       <span className="dish-card-bottom"><b>{money(item.price)}</b><small>/ {item.unit}</small><i>翻开 →</i></span>
                     </button>
-                    {item.available && item.tasting && <button className="card-tasting" type="button" onClick={() => startTasting(item.id)} aria-label={`虚拟试吃${item.name}`}><span>✦</span> 虚拟试吃 <strong>咬一口 →</strong></button>}
+                    {item.available && item.tastingModels && <button className="card-tasting" type="button" onClick={() => startTasting(item.id)} aria-label={`虚拟试吃${item.name}`}><span>✦</span> 虚拟试吃 <strong>咬一口 →</strong></button>}
                   </article>
                 ))}
               </div>
@@ -232,7 +235,6 @@ export default function App() {
                 <div className="rail-total"><span>合计</span><strong>{money(total)}</strong></div>
                 <button className="sketch-button primary" type="button" onClick={() => navigate("cart")}>打开小票 <ArrowDoodle /></button>
               </> : <EmptyTicket onMenu={() => document.querySelector(".dish-card")?.scrollIntoView({ behavior: settings.reducedMotion ? "auto" : "smooth" })} />}
-              <p className="rail-foot">价格均为演示定价</p>
             </aside>
           </div>
           {count > 0 && <button className="mobile-ticket-bar" type="button" onClick={() => navigate("cart")}><span>小票里有 {count} 份菜</span><strong>{money(total)} · 打开</strong></button>}
@@ -242,9 +244,9 @@ export default function App() {
       {screen === "detail" && (
         <main className="detail-page page-shell" data-screen="detail" data-dish={dish.id}>
           {header}
-          <button className="text-button back-link" type="button" onClick={() => navigate("menu")}>← 继续翻菜单</button>
+          <button className="text-button back-link" type="button" onClick={() => navigate("menu", true)}>← 继续翻菜单</button>
           <section className="detail-layout">
-            <div className="detail-visual"><SketchDish key={dish.id} dish={dish} settings={settings} /><p className="visual-disclaimer">平面手绘模拟观察视角，并非真实 3D 几何模型。</p></div>
+            <div className="detail-visual"><SketchDish key={dish.id} dish={dish} settings={settings} /></div>
             <div className="detail-copy">
               <div className="detail-title"><p className="thai-name">{dish.thai}</p><h1>{dish.name}</h1><p>{dish.description}</p><span className="ingredient-line">{dish.ingredients}</span></div>
               <fieldset className="option-fieldset" disabled={!dish.available}>
@@ -256,18 +258,18 @@ export default function App() {
                 <div className="quantity-control"><button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} disabled={!dish.available}>−</button><strong>{quantity}</strong><button type="button" onClick={() => setQuantity(Math.min(20, quantity + 1))} disabled={!dish.available}>＋</button></div>
                 <button className="sketch-button primary add-button" type="button" onClick={addToTicket} disabled={!dish.available}>夹进小票 · {money(lineTotal(previewLine))}</button>
               </div>
-              {dish.available && dish.tasting && <button className="tasting-link" type="button" onClick={() => navigate("tasting")}><span>✦</span><span><small>招牌互动</small> 在菜单里咬上一口</span><strong>开始虚拟试吃 →</strong></button>}
+              {dish.available && dish.tastingModels && <button className="tasting-link" type="button" onClick={() => navigate("tasting")}><span aria-hidden="true">✦</span><span>虚拟试吃 →</span></button>}
             </div>
           </section>
         </main>
       )}
 
-      {screen === "tasting" && <Tasting dish={dish} settings={settings} onExit={() => navigate("detail")} />}
+      {screen === "tasting" && <Tasting dish={dish} settings={settings} onSoundChange={sound => setSettings(current => ({ ...current, sound }))} onExit={() => navigate("detail")} />}
 
       {screen === "cart" && (
         <main className="cart-page page-shell narrow-shell" data-screen="cart">
           {header}
-          <button className="text-button back-link" type="button" onClick={() => navigate("menu")}>← 再翻几道</button>
+          <button className="text-button back-link" type="button" onClick={() => navigate("menu", true)}>← 再翻几道</button>
           <section className="paper-sheet">
             <div className="sheet-heading"><p className="eyebrow">先核对，再下单</p><h1>这一桌的小票</h1><span>{session.mode === "dine-in" ? `${session.table} 桌 · ${session.guests} 位` : "打包自取"}</span></div>
             {session.lines.length ? <div className="cart-lines">{session.lines.map((line) => {

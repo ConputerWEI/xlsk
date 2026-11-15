@@ -16,7 +16,8 @@ export const dishes: Dish[] = [
     unit: "碗",
     description: "酸香先到，虾与香茅随后。",
     ingredients: "鲜虾 · 香茅 · 南姜 · 青柠 · 草菇",
-    image: "/dishes/tomyum.webp",
+    image: "/dishes/stage-tom-yum.png",
+    tastingModels: ["/models-stage-image/tom-yum-0.glb", "/models-stage-image/tom-yum-1.glb", "/models-stage-image/tom-yum-2.glb", "/models-stage-image/tom-yum-3.glb"],
     featured: true,
     available: true,
     tasting: true,
@@ -35,7 +36,8 @@ export const dishes: Dish[] = [
     unit: "份",
     description: "炭火边缘微焦，花生酱浓郁。",
     ingredients: "鸡腿肉 · 椰奶 · 姜黄 · 花生酱",
-    image: "/dishes/satay.webp",
+    image: "/dishes/refined-satay.png",
+    tastingModels: ["/models-refined/satay-0.glb", "/models-refined/satay-1.glb", "/models-refined/satay-2.glb", "/models-refined/satay-3.glb"],
     featured: true,
     available: true,
     tasting: true,
@@ -53,7 +55,8 @@ export const dishes: Dish[] = [
     unit: "盘",
     description: "米粉裹着酸柑香，花生碎收尾。",
     ingredients: "鲜虾 · 河粉 · 豆芽 · 花生 · 青柠",
-    image: "/dishes/padthai.webp",
+    image: "/dishes/refined-pad-thai.png",
+    tastingModels: ["/models-refined/pad-thai-0.glb", "/models-refined/pad-thai-1.glb", "/models-refined/pad-thai-2.glb", "/models-refined/pad-thai-3.glb"],
     featured: true,
     available: true,
     tasting: true,
@@ -62,6 +65,29 @@ export const dishes: Dish[] = [
       { id: "extra", label: "加料", choices: [{ id: "none", label: "经典搭配", delta: 0 }, { id: "shrimp", label: "多加鲜虾", delta: 1600 }] },
     ],
   },
+  {
+    id: "mango-rice",
+    name: "芒果椰浆糯米饭",
+    thai: "ข้าวเหนียวมะม่วง",
+    category: "甜点",
+    price: 3600,
+    unit: "盘",
+    description: "熟芒果、温糯米与一点椰浆。",
+    ingredients: "熟芒果 · 糯米 · 椰浆 · 斑斓叶",
+    image: "/dishes/stage-mango-rice.png",
+    tastingModels: ["/models-stage-image/mango-rice-0.glb", "/models-stage-image/mango-rice-1.glb", "/models-stage-image/mango-rice-2.glb", "/models-stage-image/mango-rice-3.glb"],
+    featured: true,
+    available: true,
+    tasting: true,
+    options: [
+      { id: "mango", label: "芒果", choices: [{ id: "regular", label: "标准芒果", delta: 0 }, { id: "extra", label: "多加半颗", delta: 1200 }] },
+      { id: "cream", label: "椰浆", choices: [{ id: "regular", label: "标准椰浆", delta: 0 }, { id: "light", label: "少椰浆", delta: 0 }] },
+    ],
+  },
+];
+
+// Kept only to render saved receipts; these dishes are excluded from the live menu.
+const retiredDishes: Dish[] = [
   {
     id: "fish-cake",
     name: "手打泰式鱼饼",
@@ -73,7 +99,7 @@ export const dishes: Dish[] = [
     ingredients: "鱼肉 · 红咖喱 · 柠檬叶 · 黄瓜蘸汁",
     image: "/dishes/fishcake.webp",
     featured: false,
-    available: true,
+    available: false,
     tasting: true,
     options: [
       { id: "count", label: "件数", choices: [{ id: "four", label: "4 件", delta: 0 }, { id: "eight", label: "8 件", delta: 3200 }] },
@@ -95,30 +121,12 @@ export const dishes: Dish[] = [
     tasting: true,
     options: [{ id: "spice", label: "辣度", choices: spice }],
   },
-  {
-    id: "mango-rice",
-    name: "芒果椰浆糯米饭",
-    thai: "ข้าวเหนียวมะม่วง",
-    category: "甜点",
-    price: 3600,
-    unit: "盘",
-    description: "熟芒果、温糯米与一点椰浆。",
-    ingredients: "熟芒果 · 糯米 · 椰浆 · 斑斓叶",
-    image: "/dishes/mango.webp",
-    featured: false,
-    available: true,
-    tasting: true,
-    options: [
-      { id: "mango", label: "芒果", choices: [{ id: "regular", label: "标准芒果", delta: 0 }, { id: "extra", label: "多加半颗", delta: 1200 }] },
-      { id: "cream", label: "椰浆", choices: [{ id: "regular", label: "标准椰浆", delta: 0 }, { id: "light", label: "少椰浆", delta: 0 }] },
-    ],
-  },
 ];
 
 export const categories = ["招牌", "主食", "小食", "甜点"] as const;
 
 export function getDish(id: string) {
-  const dish = dishes.find((item) => item.id === id);
+  const dish = dishes.find((item) => item.id === id) ?? retiredDishes.find((item) => item.id === id);
   if (!dish) throw new Error(`未知菜品：${id}`);
   return dish;
 }

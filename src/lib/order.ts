@@ -47,7 +47,7 @@ export function addLine(lines: CartLine[], incoming: CartLine) {
 
 export function changeQuantity(lines: CartLine[], key: string, delta: number) {
   return lines
-    .map((line) => line.key === key ? { ...line, quantity: Math.max(0, Math.min(20, line.quantity + delta)) } : line)
+    .map((line) => line.key === key ? { ...line, quantity: Math.max(0, line.quantity + delta) } : line)
     .filter((line) => line.quantity > 0);
 }
 
@@ -83,12 +83,16 @@ export function readSession(): Session {
         return dish.available && line.quantity > 0 && unitPrice(line) >= 0;
       } catch { return false; }
     });
+    const receipt = parsed.receipt && Array.isArray(parsed.receipt.lines) && parsed.receipt.lines.every((line) => {
+      try { return getDish(line.dishId) && line.quantity > 0 && Number.isFinite(lineTotal(line)); }
+      catch { return false; }
+    }) ? parsed.receipt : null;
     return {
       mode: parsed.mode === "takeaway" ? "takeaway" : "dine-in",
       guests: Math.max(1, Math.min(12, Number(parsed.guests) || 2)),
       table: String(parsed.table || "A01"),
       lines,
-      receipt: parsed.receipt ?? null,
+      receipt,
     };
   } catch {
     return emptySession();

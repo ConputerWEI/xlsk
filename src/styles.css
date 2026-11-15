@@ -93,7 +93,6 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
 .welcome-cta { min-width: 220px; margin-top: 4px; }
 .saved-note { margin: 16px 0 0; color: var(--ink-soft); font-size: 13px; }
 .welcome-visual { position: relative; display: grid; place-items: center; min-width: 0; }
-.welcome-visual::before { content: ""; position: absolute; inset: 5% 2% 4% 5%; background: rgba(255,250,240,.58); clip-path: polygon(2% 4%, 97% 0, 100% 96%, 4% 100%, 0 54%); transform: rotate(1.5deg); }
 .paper-tape { position: absolute; z-index: 5; width: 100px; height: 28px; background: rgba(219,190,124,.55); clip-path: polygon(2% 10%, 99% 0, 96% 90%, 0 100%); }
 .tape-one { top: 6%; left: 43%; transform: rotate(-4deg); }
 .welcome-leaf { position: absolute; z-index: 2; width: 120px; right: -12px; top: 5%; transform: rotate(18deg); }
@@ -107,12 +106,8 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
 
 /* Interactive paper turntable */
 .sketch-stage { --light-x: 50%; --light-y: 45%; position: relative; width: min(100%, 580px); aspect-ratio: 1; display: grid; place-items: center; isolation: isolate; touch-action: pan-y; user-select: none; outline-offset: -4px; }
-.stage-circle { position: absolute; z-index: -2; inset: 11%; border-radius: 48% 52% 50% 46% / 51% 46% 54% 49%; background: radial-gradient(circle at var(--light-x) var(--light-y), #fff9e9 0, #efe2c4 47%, #e4d5b5 100%); box-shadow: inset 0 0 0 1.5px rgba(23,62,53,.22); transform: rotate(-2deg); }
-.stage-orbit { position: absolute; z-index: -1; inset: 4%; width: 92%; height: 92%; overflow: visible; pointer-events: none; }
-.stage-orbit path { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 3 7; opacity: .55; }
 .sketch-dish-object { position: relative; z-index: 2; width: 78%; height: 76%; object-fit: contain; filter: drop-shadow(8px 16px 8px rgba(58,48,27,.16)); transform-origin: center; will-change: transform; pointer-events: none; }
 .spark-layer { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.stage-note { position: absolute; z-index: 5; bottom: 4%; left: 50%; padding: 5px 12px; background: var(--paper); font-family: var(--hand); font-size: 14px; white-space: nowrap; transform: translateX(-50%) rotate(-1deg); }
 .view-tools { position: absolute; z-index: 6; right: 2%; bottom: 9%; display: flex; align-items: center; border: 1.5px solid var(--ink); border-radius: 9px 12px 8px 11px; background: var(--sheet); overflow: hidden; box-shadow: 2px 2px 0 rgba(23,62,53,.18); }
 .view-tools button { min-width: 38px; height: 34px; padding: 0 10px; border: 0; border-right: 1px solid var(--line); background: transparent; font-size: 14px; }
 .view-tools button:last-child { border: 0; }
@@ -146,12 +141,14 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
 .menu-ribbon::before, .menu-ribbon::after { content: ""; position: absolute; z-index: 4; top: 0; bottom: 0; width: 35px; pointer-events: none; background: linear-gradient(90deg, var(--paper), transparent); }
 .menu-ribbon::after { right: 0; transform: rotate(180deg); }
 .ribbon-track { display: flex; width: max-content; will-change: transform; }
-.ribbon-dish { display: flex; align-items: center; gap: 4px; width: 292px; height: 170px; padding: 8px 16px; border: 0; background: transparent; text-align: left; }
+.ribbon-dish { position: relative; flex: none; display: flex; align-items: center; gap: 4px; width: 292px; height: 170px; padding: 8px 16px; border: 1px solid transparent; border-radius: 9px 12px 8px 11px; background: transparent; text-align: left; transition: background 160ms ease, border-color 160ms ease, transform 160ms ease; }
 .ribbon-dish img { width: 138px; height: 138px; object-fit: contain; filter: drop-shadow(4px 8px 4px rgba(58,48,27,.12)); transition: transform 200ms ease; pointer-events: none; }
 .ribbon-dish > span { display: flex; flex-direction: column; min-width: 0; }
 .ribbon-dish strong { font-family: var(--hand); font-size: 19px; line-height: 1.35; }
 .ribbon-dish small { margin-top: 8px; color: var(--orange-dark); font-size: 13px; white-space: nowrap; }
-.ribbon-dish:hover img { transform: scale(1.04) rotate(-3deg); }
+.ribbon-dish[data-active="true"] { border-color: rgba(23,62,53,.55); background: rgba(227,172,60,.2); transform: translateY(-2px); }
+.ribbon-dish[data-active="true"] img { transform: scale(1.04) rotate(-3deg); }
+.menu-ribbon[data-dragging="true"], .menu-ribbon[data-dragging="true"] .ribbon-dish { cursor: grabbing; }
 .menu-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 286px; gap: 32px; padding-top: 30px; }
 .dish-catalog { min-width: 0; }
 .category-tabs { display: flex; gap: 24px; margin-bottom: 25px; border-bottom: 1.5px solid var(--line); }
@@ -231,35 +228,26 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
 .tasting-link { display: flex; align-items: center; gap: 11px; width: 100%; margin-top: 18px; padding: 14px 16px; border: 1.5px solid var(--ink); border-radius: 9px 12px 8px 11px; background: #edcf73; box-shadow: 3px 3px 0 rgba(23,62,53,.22); font-size: 14px; text-align: left; transition: transform 150ms ease, box-shadow 150ms ease; }
 .tasting-link > span:first-child { color: var(--orange-dark); font-size: 20px; }
 .tasting-link > span:nth-child(2) { display: flex; flex-direction: column; align-items: flex-start; font-family: var(--hand); font-size: 16px; font-weight: 600; }
-.tasting-link small { color: var(--orange-dark); font-family: var(--body); font-size: 10px; font-weight: 500; }
-.tasting-link strong { margin-left: auto; font-family: var(--hand); font-size: 16px; white-space: nowrap; }
 .tasting-link:hover { transform: translateY(-2px); box-shadow: 4px 5px 0 rgba(23,62,53,.22); }
-.tasting-link:hover strong { text-decoration: underline; text-underline-offset: 4px; }
+.tasting-link:hover > span:last-child { text-decoration: underline; text-underline-offset: 4px; }
 
 /* Tasting */
 .simple-header { display: flex; align-items: center; justify-content: space-between; min-height: 82px; border-bottom: 1.5px solid var(--line); }
 .simple-header > span { color: var(--ink-soft); font-size: 13px; }
 .tasting-layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); align-items: center; gap: 50px; max-width: 1160px; margin: 42px auto 0; }
 .tasting-copy h1 { margin-bottom: 20px; font-size: 46px; line-height: 1.2; }
-.tasting-copy > p:not(.eyebrow):not(.keyboard-hint) { color: var(--ink-soft); font-size: 16px; line-height: 1.8; }
-.tasting-progress { margin-top: 34px; }
-.progress-label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
-.progress-label strong { font-family: var(--hand); font-size: 22px; }
-.progress-label span { color: var(--orange-dark); font-size: 13px; }
-.scribble-progress { height: 15px; padding: 3px; border: 1.5px solid var(--ink); border-radius: 45% 52% 47% 55%; transform: rotate(-.5deg); }
-.scribble-progress i { display: block; height: 100%; border-radius: inherit; background: repeating-linear-gradient(-45deg, var(--orange), var(--orange) 4px, var(--yellow) 4px, var(--yellow) 8px); transition: width 260ms ease; }
-.keyboard-hint { margin-top: 12px; color: var(--ink-soft); font-size: 12px; }
+.tasting-progress { display: flex; align-items: center; gap: 14px; width: fit-content; max-width: 100%; margin-top: 26px; }
+.lotus-progress { display: flex; align-items: center; gap: 7px; }
+.progress-lotus { display: block; flex: none; width: 53px; height: 38px; overflow: visible; }
+.progress-lotus:nth-child(even) { transform: rotate(3deg) translateY(1px); }
+.progress-lotus:nth-child(odd) { transform: rotate(-2deg); }
+.lotus-petal { fill: rgba(233,223,201,.45); stroke: #7c9a72; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; transition: fill 180ms ease, stroke 180ms ease; }
+.lotus-petal[data-filled="true"] { fill: #e3ac3c; stroke: #49675e; }
+.tasting-count { color: var(--ink-soft); font-size: 12px; white-space: nowrap; }
 .tasting-paper { min-width: 0; text-align: center; }
 .tasting-canvas-wrap { position: relative; width: 100%; aspect-ratio: 680 / 560; }
 .tasting-canvas-wrap canvas { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; cursor: crosshair; }
-.tasting-ring { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; }
-.tasting-ring path { fill: #eee2c8; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 8; }
 .canvas-message { position: absolute; z-index: 4; left: 50%; top: 50%; width: 70%; transform: translate(-50%,-50%); font-family: var(--hand); font-size: 20px; }
-.paper-crumb { --dx: 0px; --dy: 0px; --rot: 0deg; position: absolute; z-index: 5; width: 8px; height: 6px; border: 1px solid var(--ink); pointer-events: none; animation: crumb-fly 760ms cubic-bezier(.2,.7,.4,1) forwards; }
-@keyframes crumb-fly { 0% { opacity: 1; transform: translate(0,0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 60px)) rotate(var(--rot)); } }
-.tasting-stamp { position: absolute; z-index: 6; right: 8%; top: 12%; display: flex; flex-direction: column; padding: 9px 16px; border: 3px double var(--orange-dark); color: var(--orange-dark); background: rgba(255,250,240,.8); font-family: var(--hand); font-size: 28px; font-weight: 600; transform: rotate(-9deg); animation: stamp-in 260ms ease-out; }
-.tasting-stamp span { font-size: 12px; }
-@keyframes stamp-in { from { opacity: 0; transform: rotate(-9deg) scale(1.4); } to { opacity: 1; transform: rotate(-9deg) scale(1); } }
 
 /* Cart and checkout */
 .paper-sheet { position: relative; max-width: 850px; margin: 0 auto; padding: 34px 40px 40px; border: 1.5px solid var(--ink); background: var(--sheet); box-shadow: 5px 6px 0 rgba(23,62,53,.13); clip-path: polygon(0 0,100% 0,100% 99%,96% 100%,92% 99%,88% 100%,84% 99%,80% 100%,76% 99%,72% 100%,68% 99%,64% 100%,60% 99%,56% 100%,52% 99%,48% 100%,44% 99%,40% 100%,36% 99%,32% 100%,28% 99%,24% 100%,20% 99%,16% 100%,12% 99%,8% 100%,4% 99%,0 100%); }
@@ -387,7 +375,6 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
   .guest-stepper { margin-bottom: 12px; }
   .welcome-cta { width: 100%; }
   .welcome-visual { width: 100%; margin-top: -8px; }
-  .welcome-visual::before { inset: 4%; }
   .welcome-visual .sketch-stage { max-width: 390px; }
   .welcome-visual .view-tools { right: 5%; bottom: 7%; }
   .welcome-chili { width: 70px; left: -8px; bottom: 10%; }
@@ -426,7 +413,6 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
   .back-link { margin: 18px 0 10px; }
   .detail-layout { gap: 6px; }
   .detail-visual .sketch-stage { width: calc(100% + 18px); margin-left: -9px; }
-  .stage-note { bottom: 2%; font-size: 12px; }
   .view-tools { right: 0; bottom: 8%; }
   .visual-disclaimer { margin-top: -4px; font-size: 10px; }
   .detail-copy { padding-top: 20px; }
@@ -438,15 +424,12 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
   .option-choices button { padding: 8px 11px; font-size: 13px; }
   .detail-order-row { grid-template-columns: 1fr; gap: 12px; }
   .detail-order-row .quantity-control { justify-content: flex-start; }
-  .tasting-link { flex-wrap: wrap; }
-  .tasting-link strong { width: 100%; margin: 5px 0 0 20px; }
+  .tasting-link { padding-block: 13px; }
   .simple-header { min-height: 68px; }
   .simple-header > span { max-width: 140px; font-size: 10px; text-align: right; }
   .tasting-layout { margin-top: 24px; }
   .tasting-copy h1 { margin-bottom: 10px; font-size: 34px; }
-  .tasting-copy > p:not(.eyebrow):not(.keyboard-hint) { font-size: 14px; }
   .tasting-paper { margin-inline: -10px; }
-  .tasting-stamp { right: 4%; top: 8%; font-size: 22px; }
   .paper-sheet { padding: 26px 20px 32px; }
   .sheet-heading h1 { font-size: 34px; }
   .sheet-heading > span { position: static; font-size: 14px; }
@@ -471,3 +454,24 @@ button:focus-visible, input:focus-visible, canvas:focus-visible, [tabindex]:focu
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 html[data-reduced="true"] *, html[data-reduced="true"] *::before, html[data-reduced="true"] *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+
+/* Real tasting models retain the original menu layout and decoration. */
+.model-surface { position: absolute; inset: 0; }
+.tasting-model { position: absolute; z-index: 1; inset: 0; pointer-events: none; }
+.tasting-model canvas { display: block; width: 100%; height: 100%; }
+.tasting-interaction { position: absolute; z-index: 3; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+.tasting-interaction:active { cursor: grabbing; }
+.tasting-interaction[data-ready="false"] { pointer-events: none; }
+.model-feedback { position: absolute; z-index: 5; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; color: var(--ink-soft); background: rgba(255,250,240,.92); font-family: var(--hand); font-size: 20px; line-height: 1.6; }
+.model-feedback[role="alert"] { color: var(--orange-dark); }
+
+/* Genuine food meshes inside the existing hand-drawn stage. */
+.sketch-stage.has-model { touch-action: none; }
+.sketch-model-object { position: absolute; z-index: 2; inset: 2% 2% 8%; }
+.model-surface[data-preserve-frame="true"] .model-feedback[role="status"] { inset: auto 10px 8px; padding: 3px 8px; font-size: 12px; background: rgba(245,238,223,.85); }
+
+/* Tiny food-colored granules respond to valid bites and never intercept gestures. */
+.bite-crumbs { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.tasting-page .simple-header { display: flex; align-items: center; justify-content: space-between; }
+.tasting-sound { display: grid; place-items: center; width: 36px; height: 36px; }
+.tasting-sound[aria-pressed="false"] { color: var(--ink-soft); }
