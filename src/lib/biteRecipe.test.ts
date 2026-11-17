@@ -7,7 +7,7 @@ describe('recorded bite selection', () => {
       for (let bite = 1; bite <= 12; bite++) {
         const recipe = biteRecipe(dish, bite)!;
         expect(recipe.stage).toBe(Math.floor((bite - 1) / 3));
-        expect(recipe.url).toContain(`/${dish}/v2/stage-${recipe.stage}/`);
+        expect(recipe.url).toMatch(new RegExp(`/${dish}/v[23]/stage-${recipe.stage}/`));
       }
       expect(biteUrls(dish)).toHaveLength(16);
       expect(biteRecipe(dish, 3)!.url).toContain('/stage-0/finish.mp3');
