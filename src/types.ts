@@ -56,5 +56,4 @@ export type Session = {
 export type Settings = {
   sound: boolean;
   reducedMotion: boolean;
-  autoRotate: boolean;
 };

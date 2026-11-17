@@ -10,7 +10,7 @@ import { playTick } from "./lib/sound";
 
 type Screen = "welcome" | "menu" | "detail" | "tasting" | "cart" | "checkout" | "receipt";
 
-const defaultSettings: Settings = { sound: true, reducedMotion: false, autoRotate: true };
+const defaultSettings: Settings = { sound: true, reducedMotion: false };
 
 function loadSettings(): Settings {
   try {
@@ -18,7 +18,6 @@ function loadSettings(): Settings {
     return {
       sound: typeof saved?.sound === "boolean" ? saved.sound : true,
       reducedMotion: typeof saved?.reducedMotion === "boolean" ? saved.reducedMotion : matchMedia("(prefers-reduced-motion: reduce)").matches,
-      autoRotate: typeof saved?.autoRotate === "boolean" ? saved.autoRotate : true,
     };
   } catch { return defaultSettings; }
 }
@@ -53,10 +52,8 @@ function SettingsDialog({ open, settings, onChange, onClose, onReset }: {
       <div className="dialog-tape" aria-hidden="true" />
       <div className="dialog-heading"><div><p className="eyebrow">菜单边角</p><h2>翻页设置</h2></div><button className="round-close" type="button" onClick={onClose} aria-label="关闭设置">×</button></div>
       <div className="setting-row"><span><strong>轻点声音</strong><small>火花、试吃与完成提示</small></span><Toggle label="轻点声音" checked={settings.sound} onChange={() => onChange({ ...settings, sound: !settings.sound })} /></div>
-      <div className="setting-row"><span><strong>自动转台</strong><small>停下操作后慢慢转动菜品</small></span><Toggle label="自动转台" checked={settings.autoRotate} onChange={() => onChange({ ...settings, autoRotate: !settings.autoRotate })} /></div>
-      <div className="setting-row"><span><strong>减少动态</strong><small>关闭自动旋转与悬浮动画</small></span><Toggle label="减少动态" checked={settings.reducedMotion} onChange={() => onChange({ ...settings, reducedMotion: !settings.reducedMotion })} /></div>
+      <div className="setting-row"><span><strong>减少动态</strong><small>关闭装饰动画与详情自动归位</small></span><Toggle label="减少动态" checked={settings.reducedMotion} onChange={() => onChange({ ...settings, reducedMotion: !settings.reducedMotion })} /></div>
       <button className="text-button reset-link" type="button" onClick={onReset}>清空小票并回到封面</button>
-      <p className="dialog-note">订单只保存在当前浏览器，不会发送到餐厅。</p>
     </dialog>
   );
 }
@@ -246,7 +243,7 @@ export default function App() {
           {header}
           <button className="text-button back-link" type="button" onClick={() => navigate("menu", true)}>← 继续翻菜单</button>
           <section className="detail-layout">
-            <div className="detail-visual"><SketchDish key={dish.id} dish={dish} settings={settings} /></div>
+            <div className="detail-visual"><SketchDish key={dish.id} dish={dish} settings={settings} variant="detail" /></div>
             <div className="detail-copy">
               <div className="detail-title"><p className="thai-name">{dish.thai}</p><h1>{dish.name}</h1><p>{dish.description}</p><span className="ingredient-line">{dish.ingredients}</span></div>
               <fieldset className="option-fieldset" disabled={!dish.available}>

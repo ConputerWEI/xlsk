@@ -4,6 +4,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import type { Settings } from "../types";
 import { modelPlacement, cameraDistance } from "../lib/modelView";
+import { interpolateModel, rotateModel, setModelCamera, type ModelMotion, type QuaternionValue } from "../lib/modelMotion";
+import { BITE_PULSE_MS, COMPLETE_DELAY_MS, COMPLETE_RETURN_MS, type TastingVisualFeedback } from '../lib/tastingFeedback';
 import { createPaperInk } from "../lib/paperInk";
 
 export type HitTest = (x: number, y: number) => boolean;
@@ -114,7 +116,7 @@ function acquire(src: string) {
 
 type Lease = ReturnType<typeof acquire>;
 type Layer = { root: THREE.Group; materials: Map<THREE.Material, THREE.Material>; lease: Lease; radius: number; src: string };
-type ViewerOptions = { settings: Pick<Settings, "autoRotate" | "reducedMotion">; onState: (state: ModelState) => void; interactionAt?: React.RefObject<number>; consumed?: boolean; hitTest?: React.RefObject<HitTest | null> };
+type ViewerOptions = { src?: string; visuals?: React.RefObject<TastingVisualFeedback>; settings: Pick<Settings, "reducedMotion">; onState: (state: ModelState) => void; interactionAt?: React.RefObject<number>; consumed?: boolean; hitTest?: React.RefObject<HitTest | null> };
 
 function makeLayer(asset: Asset, lease: Lease, src: string): Layer {
   const subject = asset.scene.clone(true), materials = new Map<THREE.Material, THREE.Material>();
@@ -147,12 +149,14 @@ function disposeLayer(layer: Layer) {
   layer.materials.clear(); layer.lease.release();
 }
 
-function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, pitch: React.RefObject<number>, zoom: React.RefObject<number>, latest: React.RefObject<ViewerOptions>) {
+function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, pitch: React.RefObject<number>, zoom: React.RefObject<number>, motion: React.RefObject<ModelMotion>, latest: React.RefObject<ViewerOptions>) {
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0, 0); renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.domElement.dataset.engine = "paper-three"; host.appendChild(renderer.domElement);
-  const scene = new THREE.Scene(), turntable = new THREE.Group(); scene.add(turntable);
+  const scene = new THREE.Scene(), turntable = new THREE.Group(), response = new THREE.Group();
+  response.name = "tasting-response"; turntable.add(response); scene.add(turntable);
+  const home: QuaternionValue = [0, 0, 0, 1];
   const camera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
   scene.add(new THREE.HemisphereLight(0xfff7e8, 0x81735e, 2));
   const key = new THREE.DirectionalLight(0xfff3df, 2.2); key.position.set(-3, 5, 4); scene.add(key);
@@ -162,6 +166,7 @@ function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, p
   let pending: Lease | undefined, shownSrc = "", requestedSrc = "", ready = false;
   let warmTimer = 0, warmLease: Lease | undefined, nextSrc: string | undefined, previousTime = performance.now();
   const raycaster = new THREE.Raycaster(), point = new THREE.Vector2();
+  const sampledOrientation = [NaN, NaN, NaN, NaN];
   const ownedHit: HitTest = (x, y) => {
     if (!incoming || !ready || failed) return false;
     const rect = renderer.domElement.getBoundingClientRect();
@@ -178,11 +183,13 @@ function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, p
     const distance = cameraDistance(radius, camera.aspect);
     camera.position.set(0, distance * Math.sin(36 * Math.PI / 180), distance * Math.cos(36 * Math.PI / 180));
     camera.lookAt(0, 0, 0); camera.updateProjectionMatrix();
+    setModelCamera(motion.current, camera.quaternion.toArray());
   };
+  let wakeOnResize = () => {};
   const resize = () => {
     if (!host.clientWidth || !host.clientHeight) return;
     renderer.setSize(host.clientWidth, host.clientHeight, false);
-    camera.aspect = host.clientWidth / host.clientHeight; fit();
+    camera.aspect = host.clientWidth / host.clientHeight; fit(); wakeOnResize();
   };
   const observer = new ResizeObserver(resize); observer.observe(host); resize();
   const stopWarm = () => { clearTimeout(warmTimer); warmLease?.release(); warmLease = undefined; };
@@ -202,15 +209,45 @@ function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, p
   const lost = (event: Event) => { event.preventDefault(); fail("3D 画面已中断，请重试加载。"); };
   renderer.domElement.addEventListener("webglcontextlost", lost);
   const render = (now: number) => {
+    frame = 0;
     if (!active || failed) return;
-    const dt = Math.min(0.05, Math.max(0, (now - previousTime) / 1000)); previousTime = now;
+    const dt = Math.min(1 / 30, Math.max(0, (now - previousTime) / 1000)); previousTime = now;
     const options = latest.current;
-    if (options.settings.autoRotate && !options.settings.reducedMotion && now - (options.interactionAt?.current ?? 0) > 1800) rotation.current += dt * 0.24;
-    turntable.rotation.set(pitch.current, rotation.current, 0, "YXZ");
+    // Match JG's exact exponential displacement on both axes after release.
+    const movement = motion.current;
+    const visual = options.visuals?.current;
+    let settled = false;
+    if (visual && visual.completedAt !== null) {
+      movement.vx = 0; movement.vy = 0; movement.dragging = false;
+      const progress = options.settings.reducedMotion ? 1 : Math.max(0, Math.min(1, (now - visual.completedAt - COMPLETE_DELAY_MS) / COMPLETE_RETURN_MS));
+      interpolateModel(movement, visual.completionFrom, home, 1 - (1 - progress) ** 3);
+      settled = progress >= 1;
+      if (settled) { rotation.current = 0; pitch.current = 0; }
+    } else if (!movement.dragging) {
+      const decay = Math.exp(-6 * dt), integral = (1 - decay) / 6;
+      const yawDelta = movement.vy * integral, pitchDelta = movement.vx * integral;
+      rotateModel(movement, yawDelta, pitchDelta);
+      rotation.current += yawDelta; pitch.current += pitchDelta;
+      movement.vx *= decay; movement.vy *= decay;
+    }
+    turntable.quaternion.fromArray(motion.current.orientation);
+    const age = visual ? now - visual.biteAt : BITE_PULSE_MS;
+    const pulse = !options.settings.reducedMotion && age >= 0 && age < BITE_PULSE_MS ? Math.sin(Math.PI * age / BITE_PULSE_MS) : 0;
+    response.scale.setScalar(1 - 0.018 * pulse);
+    response.position.y = -radius * 0.008 * pulse;
+    if (visual) {
+      const phase = settled ? "settled" : visual.completedAt !== null ? "finishing" : pulse ? "bite" : "idle";
+      if (host.dataset.feedback !== phase) host.dataset.feedback = phase;
+    }
     camera.zoom = Math.max(0.7, Math.min(1.6, zoom.current)); camera.updateProjectionMatrix();
+    const q = turntable.quaternion;
+    if (q.x !== sampledOrientation[0] || q.y !== sampledOrientation[1] || q.z !== sampledOrientation[2] || q.w !== sampledOrientation[3]) {
+      sampledOrientation[0] = q.x; sampledOrientation[1] = q.y; sampledOrientation[2] = q.z; sampledOrientation[3] = q.w;
+      host.dataset.orientation = `${q.x.toFixed(6)},${q.y.toFixed(6)},${q.z.toFixed(6)},${q.w.toFixed(6)}`;
+    }
     host.dataset.rotation = rotation.current.toFixed(4); host.dataset.pitch = pitch.current.toFixed(4); host.dataset.zoom = camera.zoom.toFixed(3);
     if (incoming) {
-      incoming.root.traverse(object => { if (object.userData.edible) object.visible = !options.consumed; });
+      if (!options.src || incoming.src === options.src) incoming.root.traverse(object => { if (object.userData.edible) object.visible = !options.consumed; });
       try { ink.render(renderer, scene, camera, host.clientWidth); }
       catch { fail("3D 画面加载失败，请重试。"); return; }
       host.dataset.stageTransition = "frame-swap";
@@ -219,12 +256,17 @@ function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, p
         latest.current.onState({ status: "ready" }); warmNext();
       }
     }
-    frame = requestAnimationFrame(render);
+    if (!settled || !options.consumed) frame = requestAnimationFrame(render);
   };
-  frame = requestAnimationFrame(render);
+  const wake = () => {
+    if (active && !failed && !frame) { previousTime = performance.now(); frame = requestAnimationFrame(render); }
+  };
+  wakeOnResize = wake;
+  wake();
   return {
+    wake,
     show(src: string, preloadSrc?: string) {
-      nextSrc = preloadSrc;
+      wake(); nextSrc = preloadSrc;
       if (requestedSrc === src || (shownSrc === src && incoming)) { if (ready) warmNext(); return; }
       const token = ++epoch; requestedSrc = src; ready = false; stopWarm(); pending?.release();
       latest.current.onState({ status: "loading" });
@@ -233,7 +275,7 @@ function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, p
         if (!active || token !== epoch) { lease.release(); return; }
         const layer = makeLayer(asset, lease, src); pending = undefined;
         const previous = incoming;
-        incoming = layer; turntable.add(layer.root);
+        incoming = layer; response.add(layer.root);
         // Swap complete opaque scenes; overlapping transparent vessels expose hidden surfaces.
         if (previous) disposeLayer(previous);
         radius = layer.radius; fit(); shownSrc = src; requestedSrc = "";
@@ -249,20 +291,22 @@ function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, p
   };
 }
 
-export default function TastingModel({ src, preloadSrc, rotation, pitch, zoom, settings, interactionAt, consumed, hitTest, onState }: {
+export default function TastingModel({ src, preloadSrc, rotation, pitch, zoom, motion, visuals, settings, interactionAt, consumed, hitTest, onState }: {
   src: string; preloadSrc?: string; rotation: React.RefObject<number>; pitch?: React.RefObject<number>; zoom?: React.RefObject<number>;
-  settings: Pick<Settings, "autoRotate" | "reducedMotion">; interactionAt?: React.RefObject<number>; consumed?: boolean; hitTest?: React.RefObject<HitTest | null>; onState: (state: ModelState) => void;
+  motion: React.RefObject<ModelMotion>; visuals?: React.RefObject<TastingVisualFeedback>;
+  settings: Pick<Settings, "reducedMotion">; interactionAt?: React.RefObject<number>; consumed?: boolean; hitTest?: React.RefObject<HitTest | null>; onState: (state: ModelState) => void;
 }) {
   const container = useRef<HTMLDivElement>(null), fallbackPitch = useRef(0), fallbackZoom = useRef(1);
   const pitchValue = pitch ?? fallbackPitch, zoomValue = zoom ?? fallbackZoom;
-  const latest = useRef<ViewerOptions>({ settings, onState, interactionAt, consumed, hitTest }); latest.current = { settings, onState, interactionAt, consumed, hitTest };
+  const latest = useRef<ViewerOptions>({ src, visuals, settings, onState, interactionAt, consumed, hitTest }); latest.current = { src, visuals, settings, onState, interactionAt, consumed, hitTest };
   const viewer = useRef<ReturnType<typeof createViewer> | null>(null);
   useEffect(() => {
     const host = container.current; if (!host) return;
-    try { const next = createViewer(host, rotation, pitchValue, zoomValue, latest); viewer.current = next;
+    try { const next = createViewer(host, rotation, pitchValue, zoomValue, motion, latest); viewer.current = next;
       return () => { viewer.current = null; next.dispose(); };
     } catch { latest.current.onState({ status: "error", message: "当前浏览器无法开启 3D，请检查图形加速后重试。" }); }
-  }, [rotation, pitchValue, zoomValue]);
-  useEffect(() => { viewer.current?.show(src, preloadSrc); }, [src, preloadSrc, rotation, pitchValue, zoomValue]);
+  }, [rotation, pitchValue, zoomValue, motion]);
+  useEffect(() => { viewer.current?.show(src, preloadSrc); }, [src, preloadSrc, rotation, pitchValue, zoomValue, motion]);
+  useEffect(() => { viewer.current?.wake(); }, [consumed, settings.reducedMotion, visuals]);
   return <div ref={container} className="tasting-model" aria-hidden="true" />;
 }
