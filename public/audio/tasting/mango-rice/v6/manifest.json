@@ -1,0 +1,488 @@
+{
+  "dish": "mango-rice",
+  "revision": "v6",
+  "note": "真实香蕉软食咀嚼作柔软口腔代理，非蛋糕或糯米饭专门实录；避免原片中的脆裂/硬颗粒收尾。",
+  "selection": "sustained soft-food windows; whole interval and final 160ms screened separately; 0.78s tested/exported identically",
+  "clips": [
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-0/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.084840297698975,
+        "high": 0.02852351195708281,
+        "tail_high": 0.0010381054890081737,
+        "crest_db": 25.780367851257324,
+        "tail_peak_ratio": 0.24419225752353668,
+        "tail_rms_ratio": 0.4442884624004364
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.08,
+      "peak_db": -10.3,
+      "sha256": "196330cedb179979137ad0f27a22fa8061e1930a48da021a4426832af736e071",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-0/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -36.671576499938965,
+        "high": 0.006938148038580926,
+        "tail_high": 0.005872322435428639,
+        "crest_db": 23.26876163482666,
+        "tail_peak_ratio": 0.056977808475494385,
+        "tail_rms_ratio": 0.17803187668323517
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.67,
+      "peak_db": -13.4,
+      "sha256": "52c1a5ff9dd9bfb7ae585de5ccd2c333f97166e66aeab1ab310e69029271bcc8",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-0/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.084840297698975,
+        "high": 0.02852351195708281,
+        "tail_high": 0.0010381054890081737,
+        "crest_db": 25.780367851257324,
+        "tail_peak_ratio": 0.24419225752353668,
+        "tail_rms_ratio": 0.4442884624004364
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.08,
+      "peak_db": -10.3,
+      "sha256": "196330cedb179979137ad0f27a22fa8061e1930a48da021a4426832af736e071",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-0/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": 0.0,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -36.671576499938965,
+        "high": 0.006938148038580926,
+        "tail_high": 0.005872322435428639,
+        "crest_db": 23.26876163482666,
+        "tail_peak_ratio": 0.056977808475494385,
+        "tail_rms_ratio": 0.17803187668323517
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.67,
+      "peak_db": -13.4,
+      "sha256": "52c1a5ff9dd9bfb7ae585de5ccd2c333f97166e66aeab1ab310e69029271bcc8",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-1/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -36.86014175415039,
+        "high": 0.006990318965777772,
+        "tail_high": 0.005867249997385064,
+        "crest_db": 23.304038047790527,
+        "tail_peak_ratio": 0.05652492493391037,
+        "tail_rms_ratio": 0.17760269343852997
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.86,
+      "peak_db": -13.56,
+      "sha256": "698336b6517e3193aced3fda793aaf34a5785685f5376c1a8ed723479a8adc42",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-1/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.289496421813965,
+        "high": 0.02886928916557676,
+        "tail_high": 0.0010390337278809948,
+        "crest_db": 25.77540636062622,
+        "tail_peak_ratio": 0.24481169879436493,
+        "tail_rms_ratio": 0.4447605311870575
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.29,
+      "peak_db": -10.51,
+      "sha256": "205b1f75fc7e18cbb47953c2c202d1c5917e2a8b3b2f15d80d66fda06102df41",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-1/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -36.86014175415039,
+        "high": 0.006990318965777772,
+        "tail_high": 0.005867249997385064,
+        "crest_db": 23.304038047790527,
+        "tail_peak_ratio": 0.05652492493391037,
+        "tail_rms_ratio": 0.17760269343852997
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.86,
+      "peak_db": -13.56,
+      "sha256": "698336b6517e3193aced3fda793aaf34a5785685f5376c1a8ed723479a8adc42",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-1/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.2,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.289496421813965,
+        "high": 0.02886928916557676,
+        "tail_high": 0.0010390337278809948,
+        "crest_db": 25.77540636062622,
+        "tail_peak_ratio": 0.24481169879436493,
+        "tail_rms_ratio": 0.4447605311870575
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.29,
+      "peak_db": -10.51,
+      "sha256": "205b1f75fc7e18cbb47953c2c202d1c5917e2a8b3b2f15d80d66fda06102df41",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-2/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.48491859436035,
+        "high": 0.029036952720220777,
+        "tail_high": 0.001010322254759684,
+        "crest_db": 25.76394557952881,
+        "tail_peak_ratio": 0.24480198323726654,
+        "tail_rms_ratio": 0.44463691115379333
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.48,
+      "peak_db": -10.72,
+      "sha256": "3473056a00a8b9fdda302fc7b0c08a96003ab6ab99f4d488dc058fc6cc2adc01",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-2/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -37.057130336761475,
+        "high": 0.006949187247420504,
+        "tail_high": 0.0058553669400016484,
+        "crest_db": 23.309550285339355,
+        "tail_peak_ratio": 0.05647261440753937,
+        "tail_rms_ratio": 0.1777716726064682
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -37.06,
+      "peak_db": -13.75,
+      "sha256": "eab3cf675743af601ff3c1238ef78ac80cbf32a730add67eca521bfd2354fdb8",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-2/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.48491859436035,
+        "high": 0.029036952720220777,
+        "tail_high": 0.001010322254759684,
+        "crest_db": 25.76394557952881,
+        "tail_peak_ratio": 0.24480198323726654,
+        "tail_rms_ratio": 0.44463691115379333
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.48,
+      "peak_db": -10.72,
+      "sha256": "3473056a00a8b9fdda302fc7b0c08a96003ab6ab99f4d488dc058fc6cc2adc01",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-2/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.4,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -37.057130336761475,
+        "high": 0.006949187247420504,
+        "tail_high": 0.0058553669400016484,
+        "crest_db": 23.309550285339355,
+        "tail_peak_ratio": 0.05647261440753937,
+        "tail_rms_ratio": 0.1777716726064682
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -37.06,
+      "peak_db": -13.75,
+      "sha256": "eab3cf675743af601ff3c1238ef78ac80cbf32a730add67eca521bfd2354fdb8",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-3/bite.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -37.26215839385986,
+        "high": 0.00693907696023188,
+        "tail_high": 0.0058954846376536385,
+        "crest_db": 23.310141563415527,
+        "tail_peak_ratio": 0.05630897358059883,
+        "tail_rms_ratio": 0.17772316932678223
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -37.26,
+      "peak_db": -13.95,
+      "sha256": "de0b9cd400dc952fd32bd363f1a76adcb2fb02157381c3dd64f890f49ff59063",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-3/chew-1.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.67411804199219,
+        "high": 0.02887510048121161,
+        "tail_high": 0.0010431285405310198,
+        "crest_db": 25.76632261276245,
+        "tail_peak_ratio": 0.2441285103559494,
+        "tail_rms_ratio": 0.44404956698417664
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.67,
+      "peak_db": -10.91,
+      "sha256": "aef1f3c4b60833a5b29337ba20c96b5cbf7d614aef8e66a93fd00226bbe5a1ff",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-3/chew-2.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 66.84,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 66.83999999999997,
+        "rms_db": -41.600530907466656,
+        "high": 0.013227005050733098,
+        "tail_high": 0.004642025460905149,
+        "crest_db": 24.009809220724332,
+        "tail_peak_ratio": 0.050763412810013155,
+        "tail_rms_ratio": 0.23806834016559605
+      },
+      "decoded_tail": {
+        "rms_db": -37.26215839385986,
+        "high": 0.00693907696023188,
+        "tail_high": 0.0058954846376536385,
+        "crest_db": 23.310141563415527,
+        "tail_peak_ratio": 0.05630897358059883,
+        "tail_rms_ratio": 0.17772316932678223
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -37.26,
+      "peak_db": -13.95,
+      "sha256": "de0b9cd400dc952fd32bd363f1a76adcb2fb02157381c3dd64f890f49ff59063",
+      "peak_attenuation": 1.0
+    },
+    {
+      "url": "/audio/tasting/mango-rice/v6/stage-3/finish.mp3",
+      "source": "音效库/freesound/banana-soft.mp3",
+      "start": 36.06,
+      "source_gain_db": 6,
+      "stage_gain_db": -0.6000000000000001,
+      "raw_tail": {
+        "start": 36.05999999999999,
+        "rms_db": -41.631719142425766,
+        "high": 0.028887485945585076,
+        "tail_high": 0.0011586123657476377,
+        "crest_db": 25.76233783034448,
+        "tail_peak_ratio": 0.2445045198357625,
+        "tail_rms_ratio": 0.44942678126156677
+      },
+      "decoded_tail": {
+        "rms_db": -36.67411804199219,
+        "high": 0.02887510048121161,
+        "tail_high": 0.0010431285405310198,
+        "crest_db": 25.76632261276245,
+        "tail_peak_ratio": 0.2441285103559494,
+        "tail_rms_ratio": 0.44404956698417664
+      },
+      "processing": "direct soft-food recording; exact .78s selection including finish; one-pole 65Hz/6500Hz filtering; 8ms/80ms fades; linear peak protection only",
+      "duration": 0.78,
+      "rms_db": -36.67,
+      "peak_db": -10.91,
+      "sha256": "aef1f3c4b60833a5b29337ba20c96b5cbf7d614aef8e66a93fd00226bbe5a1ff",
+      "peak_attenuation": 1.0
+    }
+  ]
+}
