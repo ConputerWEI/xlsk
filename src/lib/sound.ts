@@ -1,3 +1,5 @@
+import { biteRecipe, biteUrls } from './biteRecipe';
+
 let context: AudioContext | null = null;
 
 export function playTick(enabled: boolean, complete = false) {
@@ -28,12 +30,11 @@ let biteVoice: BiteVoice | null = null;
 let biteGeneration = 0;
 
 const biteProfiles: Record<string, { level: number; lowpass: number; rate: number }> = {
-  satay: { level: 0.29, lowpass: 2900, rate: 0.98 },
-  "pad-thai": { level: 0.32, lowpass: 2600, rate: 1 },
-  "mango-rice": { level: 0.34, lowpass: 1900, rate: 0.99 },
-  "tom-yum": { level: 0.22, lowpass: 2300, rate: 1.02 },
+  satay: { level: 0.55, lowpass: 6500, rate: 1 },
+  "pad-thai": { level: 0.39, lowpass: 6200, rate: 1 },
+  "mango-rice": { level: 0.36, lowpass: 3600, rate: 1 },
+  "tom-yum": { level: 0.32, lowpass: 6500, rate: 1 },
 };
-const biteFiles = ["bite", "chew-1", "chew-2", "finish"];
 
 function biteContext() {
   context ??= new AudioContext({ latencyHint: "interactive" });
@@ -55,7 +56,7 @@ export function primeBiteAudio(dishId: string) {
   try {
     const audio = biteContext();
     if (audio.state === "suspended") void audio.resume().catch(() => {});
-    for (const file of biteFiles) void decodeBite(audio, `/audio/tasting/${dishId}/${file}.mp3`);
+    for (const url of biteUrls(dishId)) void decodeBite(audio, url);
   } catch { /* Optional sound must not block the menu. */ }
 }
 
@@ -76,6 +77,8 @@ export function stopBiteAudio() {
 
 export function playBiteAudio(enabled: boolean, dishId: string, bites: number) {
   if (!enabled) return;
+  const recipe = biteRecipe(dishId, bites);
+  if (!recipe) return;
   const generation = ++biteGeneration;
   void (async () => {
     let deadline: ReturnType<typeof setTimeout> | undefined;
@@ -84,10 +87,8 @@ export function playBiteAudio(enabled: boolean, dishId: string, bites: number) {
       const audio = biteContext(), started = performance.now();
       // Start device resume inside the actual click/key gesture, not after fetch.
       const resume = audio.state === "suspended" ? audio.resume() : Promise.resolve();
-      const role = (bites - 1) % 3;
-      const file = role === 0 ? "bite" : role === 2 ? "finish" : `chew-${Math.floor((bites - 1) / 3) % 2 + 1}`;
       const buffer = await Promise.race([
-        Promise.all([resume, decodeBite(audio, `/audio/tasting/${dishId}/${file}.mp3`)]).then(([, value]) => value),
+        Promise.all([resume, decodeBite(audio, recipe.url)]).then(([, value]) => value),
         new Promise<null>(resolve => { deadline = setTimeout(() => resolve(null), 80); }),
       ]);
       if (!buffer || generation !== biteGeneration || document.hidden || audio.state !== "running" || performance.now() - started > 100) return;
@@ -99,11 +100,12 @@ export function playBiteAudio(enabled: boolean, dishId: string, bites: number) {
         previous.gain.gain.linearRampToValueAtTime(0, now + 0.045);
         previous.source.stop(now + 0.045); fadingBites.add(previous); biteVoice = null;
       }
-      const profile = biteProfiles[dishId] ?? biteProfiles.satay, stage = Math.floor((bites - 1) / 3);
+      const profile = biteProfiles[dishId];
       const source = audio.createBufferSource(), gain = audio.createGain(), filter = audio.createBiquadFilter();
       created = { source, gain, filter }; const voice = created;
-      source.buffer = buffer; source.playbackRate.value = profile.rate * (1 - stage * 0.012);
-      filter.type = "lowpass"; filter.frequency.value = profile.lowpass * (1 - stage * 0.05);
+      source.buffer = buffer; source.playbackRate.value = profile.rate;
+      // Texture and portion differences are already in the edited recordings.
+      filter.type = "lowpass"; filter.frequency.value = profile.lowpass;
       const now = audio.currentTime, end = now + buffer.duration / source.playbackRate.value;
       gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(profile.level, now + 0.012);
       gain.gain.setValueAtTime(profile.level, Math.max(now + 0.012, end - 0.06)); gain.gain.linearRampToValueAtTime(0, end);
