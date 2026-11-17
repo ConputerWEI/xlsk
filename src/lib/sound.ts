@@ -40,9 +40,9 @@ const tastingCueUrls = {
 } as const;
 
 const biteProfiles: Record<string, { level: number; lowpass: number; rate: number }> = {
-  satay: { level: 0.55, lowpass: 6500, rate: 1 },
+  satay: { level: 0.42, lowpass: 6500, rate: 1 },
   "pad-thai": { level: 0.39, lowpass: 6200, rate: 1 },
-  "mango-rice": { level: 0.36, lowpass: 3600, rate: 1 },
+  "mango-rice": { level: 0.47, lowpass: 12000, rate: 1 },
   "tom-yum": { level: 0.32, lowpass: 6500, rate: 1 },
 };
 

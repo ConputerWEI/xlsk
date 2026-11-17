@@ -4,7 +4,7 @@ import { playBiteAudio, playStageCue, primeBiteAudio, primeTastingCues, stopBite
 import { modelForBites } from "../lib/tastingModel";
 import ModelSurface from "./ModelSurface";
 import { createTastingVisualFeedback } from '../lib/tastingFeedback';
-import { createModelMotion, rotateModel } from "../lib/modelMotion";
+import { cancelModelReturn, scheduleModelReturn, createModelMotion, rotateModel } from "../lib/modelMotion";
 
 const lotusPetals = [
   "M30 35C16 36 7 27 6 15c12 1 22 8 24 20Z",
@@ -80,6 +80,8 @@ export default function Tasting({ dish, settings, onExit, onSoundChange }: { dis
   const pitch = useRef(0);
   const interactionAt = useRef(performance.now());
   const hitTest = useRef<((x: number, y: number) => boolean) | null>(null);
+  const tastingActive = useRef(true);
+  const interactionElement = useRef<HTMLDivElement>(null);
   const pointer = useRef<{ id: number; x: number; y: number; lastX: number; lastY: number; time: number; dragged: boolean } | null>(null);
   const [bites, setBites] = useState(0);
   const biteCount = useRef(0);
@@ -88,6 +90,20 @@ export default function Tasting({ dish, settings, onExit, onSoundChange }: { dis
   const modelSrc = dish.tastingModels ? modelForBites(dish.tastingModels, bites) : null;
   const nextSrc = dish.tastingModels?.[Math.floor(bites / 3) + 1];
   const ready = !!modelSrc && readyModel === modelSrc;
+  useEffect(() => {
+    let inView = true;
+    const visibility = () => {
+      tastingActive.current = !document.hidden && inView;
+      if (!tastingActive.current) { pointer.current = null; motion.current.dragging = false; motion.current.vx = 0; motion.current.vy = 0; cancelModelReturn(motion.current); }
+      else if (!settings.reducedMotion && biteCount.current < 12) scheduleModelReturn(motion.current, performance.now());
+    };
+    const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => { inView = entries[0]?.isIntersecting ?? false; visibility(); });
+    if (interactionElement.current) observer?.observe(interactionElement.current);
+    if (settings.reducedMotion) cancelModelReturn(motion.current);
+    document.addEventListener('visibilitychange', visibility);
+    return () => { observer?.disconnect(); document.removeEventListener('visibilitychange', visibility); cancelModelReturn(motion.current); };
+  }, [settings.reducedMotion]);
+  function queueReturn() { if (tastingActive.current && !settings.reducedMotion && biteCount.current < 12) scheduleModelReturn(motion.current, performance.now()); }
 
   function biteAt(point?: { x: number; y: number }) {
     if (!ready || biteCount.current >= 12) return;
@@ -95,6 +111,7 @@ export default function Tasting({ dish, settings, onExit, onSoundChange }: { dis
     const now = performance.now();
     visuals.current.biteAt = now;
     if (next === 12) {
+      cancelModelReturn(motion.current);
       visuals.current.completedAt = now;
       const q = motion.current.orientation;
       visuals.current.completionFrom = [q[0], q[1], q[2], q[3]];
@@ -134,12 +151,12 @@ export default function Tasting({ dish, settings, onExit, onSoundChange }: { dis
       </div>
       <div className="tasting-paper"><div className="tasting-canvas-wrap">
         {modelSrc ? <ModelSurface src={modelSrc} preloadSrc={nextSrc} rotation={rotation} pitch={pitch} motion={motion} visuals={visuals} interactionAt={interactionAt} consumed={bites === 12} hitTest={hitTest} settings={settings} onState={state => setReadyModel(state.status === "ready" ? modelSrc : null)} /> : <p className="model-feedback" role="status">该菜品的 3D 试吃正在准备中</p>}
-        <div className="tasting-interaction" role="button" tabIndex={bites === 12 ? -1 : 0} aria-label={`咬一口${dish.name}，已吃${bites}口`} aria-disabled={!ready || bites >= 12}
+        <div ref={interactionElement} className="tasting-interaction" role="button" tabIndex={bites === 12 ? -1 : 0} aria-label={`咬一口${dish.name}，已吃${bites}口`} aria-disabled={!ready || bites >= 12}
           data-bites={bites} data-ready={ready}
           onPointerDown={event => {
             if (!ready || biteCount.current >= 12 || pointer.current || !event.isPrimary || event.button !== 0) return;
             pointer.current = { id: event.pointerId, x: event.clientX, y: event.clientY, lastX: event.clientX, lastY: event.clientY, time: event.timeStamp, dragged: false };
-            motion.current.vx = 0; motion.current.vy = 0; motion.current.dragging = true;
+            cancelModelReturn(motion.current); motion.current.vx = 0; motion.current.vy = 0; motion.current.dragging = true;
             event.currentTarget.setPointerCapture(event.pointerId);
             interactionAt.current = performance.now();
           }}
@@ -160,11 +177,12 @@ export default function Tasting({ dish, settings, onExit, onSoundChange }: { dis
             pointer.current = null; motion.current.dragging = false;
             if (event.timeStamp - drag.time > 80) { motion.current.vx = 0; motion.current.vy = 0; }
             if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+            queueReturn();
             if (drag.dragged) return;
             if (hitTest.current?.(event.clientX, event.clientY)) biteAt({ x: event.clientX, y: event.clientY });
           }}
-          onPointerCancel={event => { if (pointer.current?.id === event.pointerId) { pointer.current = null; motion.current.dragging = false; motion.current.vx = 0; motion.current.vy = 0; } }}
-          onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId) { pointer.current = null; motion.current.dragging = false; motion.current.vx = 0; motion.current.vy = 0; } }}
+          onPointerCancel={event => { if (pointer.current?.id === event.pointerId) { pointer.current = null; motion.current.dragging = false; motion.current.vx = 0; motion.current.vy = 0; queueReturn(); } }}
+          onLostPointerCapture={event => { if (pointer.current?.id === event.pointerId) { pointer.current = null; motion.current.dragging = false; motion.current.vx = 0; motion.current.vy = 0; queueReturn(); } }}
           onKeyDown={event => {
             if (biteCount.current >= 12) return;
             if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
@@ -174,6 +192,7 @@ export default function Tasting({ dish, settings, onExit, onSoundChange }: { dis
               if (event.key === "ArrowRight") rotation.current += 0.18;
               if (event.key === "ArrowUp") pitch.current -= 0.18;
               if (event.key === "ArrowDown") pitch.current += 0.18;
+              queueReturn();
             } else if (event.key === "Enter" || event.key === " ") { event.preventDefault(); if (!event.repeat) { interactionAt.current = performance.now(); biteAt(); } }
           }} />
       <canvas ref={crumbs.canvas} className="bite-crumbs" data-live="0" aria-hidden="true" />

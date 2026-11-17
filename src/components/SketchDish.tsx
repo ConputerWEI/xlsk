@@ -38,7 +38,7 @@ export default function SketchDish({ dish, settings, compact = false, variant = 
   }
   function scheduleReturn() {
     cancelReturn();
-    if (variant !== "detail" || settings.reducedMotion || !active.current || !modelReady.current || dragging.current) return;
+    if (settings.reducedMotion || !active.current || !modelReady.current || dragging.current) return;
     const dot = motion.current.orientation.reduce((sum, value, i) => sum + value * home.current[i], 0);
     if (Math.abs(dot) > 0.9999999) return;
     returnTimer.current = setTimeout(() => {

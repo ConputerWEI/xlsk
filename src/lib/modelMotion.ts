@@ -1,8 +1,25 @@
 export type QuaternionValue = [number, number, number, number];
-export type ModelMotion = { orientation: QuaternionValue; camera: QuaternionValue; vx: number; vy: number; dragging: boolean };
+export type ModelMotion = { home: QuaternionValue; returning: { at: number; from: QuaternionValue | null } | null; orientation: QuaternionValue; camera: QuaternionValue; vx: number; vy: number; dragging: boolean };
 
 export function createModelMotion(yaw = 0): ModelMotion {
-  return { orientation: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)], camera: [0, 0, 0, 1], vx: 0, vy: 0, dragging: false };
+  return { home: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)], returning: null, orientation: [0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2)], camera: [0, 0, 0, 1], vx: 0, vy: 0, dragging: false };
+}
+
+export function cancelModelReturn(motion: ModelMotion) { motion.returning = null; }
+export function scheduleModelReturn(motion: ModelMotion, now: number) {
+  const dot = motion.orientation.reduce((sum, value, i) => sum + value * motion.home[i], 0);
+  motion.returning = Math.abs(dot) > 0.9999999 && Math.hypot(motion.vx, motion.vy) < 0.001 ? null : { at: now + 150, from: null };
+}
+export function stepModelReturn(motion: ModelMotion, now: number, reduced = false): boolean {
+  if (reduced || motion.dragging) { cancelModelReturn(motion); return false; }
+  const returning = motion.returning;
+  if (!returning || now < returning.at) return false;
+  returning.from ??= [...motion.orientation];
+  const progress = (now >= returning.at + 650 ? 1 : (now - returning.at) / 650);
+  motion.vx = 0; motion.vy = 0;
+  interpolateModel(motion, returning.from, motion.home, 1 - (1 - progress) ** 3);
+  if (progress >= 1) motion.returning = null;
+  return true;
 }
 
 export function setModelCamera(motion: ModelMotion, camera: readonly number[]) {

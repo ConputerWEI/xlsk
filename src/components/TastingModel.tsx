@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import type { Settings } from "../types";
 import { modelPlacement, cameraDistance } from "../lib/modelView";
-import { interpolateModel, rotateModel, setModelCamera, type ModelMotion, type QuaternionValue } from "../lib/modelMotion";
+import { cancelModelReturn, stepModelReturn, interpolateModel, rotateModel, setModelCamera, type ModelMotion, type QuaternionValue } from "../lib/modelMotion";
 import { BITE_PULSE_MS, COMPLETE_DELAY_MS, COMPLETE_RETURN_MS, type TastingVisualFeedback } from '../lib/tastingFeedback';
 import { createPaperInk } from "../lib/paperInk";
 
@@ -218,11 +218,14 @@ function createViewer(host: HTMLDivElement, rotation: React.RefObject<number>, p
     const visual = options.visuals?.current;
     let settled = false;
     if (visual && visual.completedAt !== null) {
+      cancelModelReturn(movement);
       movement.vx = 0; movement.vy = 0; movement.dragging = false;
       const progress = options.settings.reducedMotion ? 1 : Math.max(0, Math.min(1, (now - visual.completedAt - COMPLETE_DELAY_MS) / COMPLETE_RETURN_MS));
       interpolateModel(movement, visual.completionFrom, home, 1 - (1 - progress) ** 3);
       settled = progress >= 1;
       if (settled) { rotation.current = 0; pitch.current = 0; }
+    } else if (stepModelReturn(movement, now, options.settings.reducedMotion)) {
+      if (!movement.returning) { rotation.current = 0; pitch.current = 0; }
     } else if (!movement.dragging) {
       const decay = Math.exp(-6 * dt), integral = (1 - decay) / 6;
       const yawDelta = movement.vy * integral, pitchDelta = movement.vx * integral;
